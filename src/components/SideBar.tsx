@@ -254,11 +254,11 @@ function Cart(props: Props) {
     },
     {
       label: "Cash On Delivery",
-      value: "cash",
+      value: "cod",
     },
     {
       label: "Proof of Payment",
-      value: "proof-of-payment",
+      value: "pop",
     },
   ];
 

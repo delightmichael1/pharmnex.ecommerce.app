@@ -129,6 +129,27 @@ function Orders() {
     },
   ];
 
+  const getPaymentMethod = (value: string): string => {
+    console.log("@@@@@@@@@@@", value);
+    let returnValue;
+    switch (value) {
+      case "cod":
+        returnValue = "Cash on Delivery";
+        break;
+      case "pop":
+        returnValue = "Proof of Payment";
+        break;
+      case "credit":
+        returnValue = "Credit";
+        break;
+      default:
+        returnValue = "Cash on Delivery";
+        break;
+    }
+
+    return returnValue;
+  };
+
   return (
     <DashboardLayout
       title="Orders"
@@ -230,7 +251,7 @@ function Orders() {
                           </td>
                           <td className="p-3">
                             <span className="font-semibold capitalize">
-                              {order.paymentMethod.replaceAll("-", " ")}
+                              {getPaymentMethod(order.paymentMethod)}
                             </span>
                           </td>
                           <td className="p-3">
