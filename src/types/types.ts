@@ -21,30 +21,9 @@ interface IOrder {
   total: number;
   totalCost: number;
   createdAt: string;
+  paymentMethod: string;
   deliveryDate: string;
   status: "pending" | "accepted" | "shipped" | "cancelled";
-}
-
-interface IOrderItem {
-  productId: string;
-  name: string;
-  image: string;
-  price: number;
-  quantity: number;
-  subtotal: number;
-  discount?: number;
-}
-
-interface IBlogPost {
-  id: number;
-  title: string;
-  author: string;
-  category: string;
-  date: string;
-  comments: number;
-  hits: number;
-  image: string;
-  excerpt: string;
 }
 
 interface INotification {

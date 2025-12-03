@@ -14,13 +14,14 @@ import { useClickOutside } from "@/hooks/useOutsideClick";
 import React, { useEffect, useRef, useState } from "react";
 import { FaRegCircleXmark, FaXmark } from "react-icons/fa6";
 import { BiChevronUp, BiChevronDown, BiTrash } from "react-icons/bi";
+import SelectFieldWithOnChange from "./input/SelectFieldWithOnChange";
 
 function SideBar() {
   const barRef = useRef<HTMLDivElement>(null);
   const showSideBar = useAppStore((state) => state.showSideBar);
-  useClickOutside(barRef, () => {
-    useAppStore.setState({ showSideBar: { open: false, value: "" } });
-  });
+  // useClickOutside(barRef, () => {
+  //   useAppStore.setState({ showSideBar: { open: false, value: "" } });
+  // });
 
   return (
     <AnimatePresence>
@@ -150,12 +151,22 @@ function Cart(props: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const cart = usePersistedStore((state) => state.cart);
   const wishList = usePersistedStore((state) => state.wishList);
+  const [paymentMethodError, setPaymentMethodError] = useState("");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const [errors, setErrors] = useState<{ id: string; message: string }[]>([]);
   const data = props.isCart ? cart : wishList;
 
   const placeOrder = async () => {
+    if (!selectedPaymentMethod) {
+      setPaymentMethodError("payment method cannot be empty");
+      return toast({
+        description: "payment method cannot be empty",
+        variant: "error",
+      });
+    }
     if (data.length === 0) return;
     const dataToSend = {
+      paymentMethod: selectedPaymentMethod,
       items: data.map((item) => ({
         product: item.id,
         quantity: item.quantity,
@@ -236,6 +247,21 @@ function Cart(props: Props) {
     });
   };
 
+  const paymentMethods = [
+    {
+      label: "Credit",
+      value: "credit",
+    },
+    {
+      label: "Cash On Delivery",
+      value: "cash",
+    },
+    {
+      label: "Proof of Payment",
+      value: "proof-of-payment",
+    },
+  ];
+
   return (
     <div className="flex flex-col space-y-4">
       <div className="pb-4 border-strokedark border-b w-full">
@@ -243,6 +269,27 @@ function Cart(props: Props) {
           Shopping {props.isCart ? "Cart" : "WishList"}
         </h2>
       </div>
+      {data.length > 0 && props.isCart && (
+        <div className="flex flex-col space-y-1">
+          <SelectFieldWithOnChange
+            name={"paymentMethod"}
+            label={"Payment Method"}
+            value={selectedPaymentMethod}
+            placeholder="Selected Payment Method"
+            options={paymentMethods}
+            onChange={(value) => {
+              setSelectedPaymentMethod(value);
+              setPaymentMethodError("");
+            }}
+            classNames={{
+              base: cn("bg-card-2/50", paymentMethodError && "border-red-500"),
+            }}
+          />
+          {paymentMethodError && (
+            <span className="text-red-500">{paymentMethodError}</span>
+          )}
+        </div>
+      )}
       <div className="flex flex-col space-y-6 w-full divide">
         {data.map((item) => (
           <div

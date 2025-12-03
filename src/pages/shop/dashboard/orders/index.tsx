@@ -8,10 +8,9 @@ import Dropdown from "@/components/dropdown/Dropdown";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import SearchInput from "@/components/input/SearchInput";
 import usePersistedStore from "@/stores/PersistedStored";
+import { TableRowSkeleton } from "@/components/ui/Shimmer";
 import React, { useEffect, useMemo, useState } from "react";
 import { formatDate, getStatusBadgeClass } from "@/utils/constants";
-import { del } from "framer-motion/client";
-import { TableRowSkeleton } from "@/components/ui/Shimmer";
 
 function Orders() {
   const router = useRouter();
@@ -120,6 +119,9 @@ function Orders() {
                         Total
                       </th>
                       <th className="p-3 font-semibold text-sm text-left">
+                        Payment Method
+                      </th>
+                      <th className="p-3 font-semibold text-sm text-left">
                         Status
                       </th>
                       <th className="p-3 font-semibold text-sm text-left"></th>
@@ -161,6 +163,11 @@ function Orders() {
                           <td className="p-3">
                             <span className="font-semibold text-green-600">
                               ${order.total.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-semibold capitalize">
+                              {order.paymentMethod.replaceAll("-", " ")}
                             </span>
                           </td>
                           <td className="p-3">

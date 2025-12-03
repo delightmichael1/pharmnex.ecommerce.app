@@ -186,6 +186,9 @@ function Orders() {
                         Total
                       </th>
                       <th className="p-3 font-semibold text-sm text-left">
+                        Payment Method
+                      </th>
+                      <th className="p-3 font-semibold text-sm text-left">
                         Status
                       </th>
                       <th className="p-3 font-semibold text-sm text-left"></th>
@@ -223,6 +226,11 @@ function Orders() {
                           <td className="p-3">
                             <span className="font-semibold text-green-600">
                               ${order.total.toFixed(2)}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="font-semibold capitalize">
+                              {order.paymentMethod.replaceAll("-", " ")}
                             </span>
                           </td>
                           <td className="p-3">

@@ -51,7 +51,7 @@ const SupplierProducts: React.FC<ComponentProps> = (props) => {
   }, []);
 
   return (
-    <div className="flex flex-col space-y-8 w-full">
+    <div className="flex flex-col space-y-8 pb-10 w-full">
       <div className="flex lg:flex-row flex-col lg:space-x-4 space-y-4 lg:space-y-0 mx-auto w-full h-fit container">
         <div className="w-full lg:w-1/4">
           <LeftSide
