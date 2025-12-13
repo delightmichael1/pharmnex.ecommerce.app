@@ -16,8 +16,13 @@ import SearchInput from "@/components/input/SearchInput";
 import AcceptOrderModal from "@/components/modals/Order";
 import usePersistedStore from "@/stores/PersistedStored";
 import React, { useEffect, useMemo, useState } from "react";
-import { formatDate, getStatusBadgeClass } from "@/utils/constants";
+import {
+  formatDate,
+  getPaymentMethod,
+  getStatusBadgeClass,
+} from "@/utils/constants";
 import FxDropdown, { DropdownItem } from "@/components/dropdown/FxDropDown";
+import useAppStore from "@/stores/AppStore";
 
 function Orders() {
   const router = useRouter();
@@ -40,8 +45,8 @@ function Orders() {
   const fetchOrders = async () => {
     setIsLoading(true);
     let fxsort = -1;
-    if (sortBy === "Newest") fxsort = -1;
-    else if (sortBy === "Oldest") fxsort = 1;
+    if (sortBy === "Newest") fxsort = 1;
+    else if (sortBy === "Oldest") fxsort = -1;
     try {
       const response = await secureAxios.get(
         `/shop/orders?page=${page}&sort=${fxsort}&limit=20`
@@ -78,8 +83,9 @@ function Orders() {
       label: "View Order",
       icon: IoEyeOutline,
       description: "View order details",
-      onclick: (orderId: string) => {
-        router.push(`/supplier/orders/${orderId}`);
+      onclick: (order: IOrder) => {
+        router.push(`/supplier/orders/${order.id}`);
+        useAppStore.setState({ selectedOrder: order });
       },
     },
     {
@@ -87,10 +93,10 @@ function Orders() {
       icon: GiCheckMark,
       description: "Accept order with date",
       precedence: ["accepted", "cancelled", "shipped"],
-      onclick: (orderId: string) => {
+      onclick: (order: IOrder) => {
         openModal(
           <AcceptOrderModal
-            orderId={orderId}
+            orderId={order.id}
             closeModal={closeModal}
             type={"accepted"}
           />
@@ -102,10 +108,10 @@ function Orders() {
       icon: TbCancel,
       description: "Decline order",
       precedence: ["shipped", "cancelled"],
-      onclick: (orderId: string) => {
+      onclick: (order: IOrder) => {
         openModal(
           <AcceptOrderModal
-            orderId={orderId}
+            orderId={order.id}
             closeModal={closeModal}
             type={"cancelled"}
           />
@@ -117,10 +123,10 @@ function Orders() {
       icon: GoVerified,
       description: "Mark order as shipped",
       precedence: ["shipped", "cancelled"],
-      onclick: (orderId: string) => {
+      onclick: (order: IOrder) => {
         openModal(
           <AcceptOrderModal
-            orderId={orderId}
+            orderId={order.id}
             closeModal={closeModal}
             type={"shipped"}
           />
@@ -128,27 +134,6 @@ function Orders() {
       },
     },
   ];
-
-  const getPaymentMethod = (value: string): string => {
-    console.log("@@@@@@@@@@@", value);
-    let returnValue;
-    switch (value) {
-      case "cod":
-        returnValue = "Cash on Delivery";
-        break;
-      case "pop":
-        returnValue = "Proof of Payment";
-        break;
-      case "credit":
-        returnValue = "Credit";
-        break;
-      default:
-        returnValue = "Cash on Delivery";
-        break;
-    }
-
-    return returnValue;
-  };
 
   return (
     <DashboardLayout
@@ -278,7 +263,7 @@ function Orders() {
                             >
                               {dropDownItems.map((item) => (
                                 <DropdownItem
-                                  onClick={() => item.onclick(order.id)}
+                                  onClick={() => item.onclick(order)}
                                   className={
                                     item.precedence?.includes(
                                       order?.status ?? ""

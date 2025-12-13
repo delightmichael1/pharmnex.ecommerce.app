@@ -13,6 +13,21 @@ export const getStatusBadgeClass = (status: string) => {
   }
 };
 
+export const paymentMethods = [
+  {
+    label: "Credit",
+    value: "credit",
+  },
+  {
+    label: "Cash On Delivery",
+    value: "cod",
+  },
+  {
+    label: "Proof of Payment",
+    value: "pop",
+  },
+];
+
 export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("en-US", {
@@ -84,3 +99,23 @@ export const cities = [
   { label: "Trelawney", value: "trelawney" },
   { label: "Inyanga", value: "inyanga" },
 ];
+
+export const getPaymentMethod = (value: string): string => {
+  let returnValue;
+  switch (value) {
+    case "cod":
+      returnValue = "Cash on Delivery";
+      break;
+    case "pop":
+      returnValue = "Proof of Payment";
+      break;
+    case "credit":
+      returnValue = "Credit";
+      break;
+    default:
+      returnValue = "Cash on Delivery";
+      break;
+  }
+
+  return returnValue;
+};

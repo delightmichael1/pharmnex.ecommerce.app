@@ -20,7 +20,6 @@ import { useModal } from "@/components/modals/Modal";
 import CategoryCard from "@/components/CategoryCard";
 import Dropdown from "@/components/dropdown/Dropdown";
 import QuickView from "@/components/modals/QuickView";
-import DashboardLayout from "@/layouts/DashboardLayout";
 import AddProduct from "@/components/modals/AddProduct";
 import { TbBrandGoogleAnalytics } from "react-icons/tb";
 import useProductsRoutes from "@/hooks/useProductsRoutes";

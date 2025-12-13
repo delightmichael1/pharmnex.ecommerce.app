@@ -46,7 +46,48 @@ function useProductsRoutes() {
       .finally(() => setIsLoading && setIsLoading(false));
   };
 
-  return { getProducts };
+  const getOrderSupplierNCustomer = async (id: string, userId: string) => {
+    console.log("############### getting supplier");
+    await secureAxios
+      .get("/shop/suppliers?supplier=" + id)
+      .then((res) => {
+        if (res.data.suppliers) {
+          useAppStore.setState({
+            orderSupplier:
+              res.data.suppliers.length > 0 ? res.data.suppliers[0] : undefined,
+          });
+        }
+        getCustomer(userId);
+      })
+      .catch((err) => {
+        toast({
+          title: "Error",
+          description: err?.response?.data?.message ?? err.message,
+          variant: "error",
+        });
+      });
+  };
+
+  const getCustomer = async (id: string) => {
+    await secureAxios
+      .get("/user?customer-id=" + id)
+      .then((res) => {
+        if (res.data) {
+          useAppStore.setState({
+            orderCustomer: res.data,
+          });
+        }
+      })
+      .catch((err) => {
+        toast({
+          title: "Error",
+          description: err?.response?.data?.message ?? err.message,
+          variant: "error",
+        });
+      });
+  };
+
+  return { getProducts, getOrderSupplierNCustomer };
 }
 
 export default useProductsRoutes;

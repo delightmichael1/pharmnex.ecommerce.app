@@ -19,7 +19,10 @@ interface IProduct {
 interface IOrder {
   id: string;
   total: number;
+  popUrl: string;
+  userId: string;
   totalCost: number;
+  supplier: string;
   createdAt: string;
   paymentMethod: string;
   deliveryDate: string;

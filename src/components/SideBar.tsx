@@ -10,46 +10,47 @@ import { HiShoppingBag } from "react-icons/hi2";
 import useUserStore from "@/stores/useUserStore";
 import { AnimatePresence, motion } from "framer-motion";
 import usePersistedStore from "@/stores/PersistedStored";
-import { useClickOutside } from "@/hooks/useOutsideClick";
 import React, { useEffect, useRef, useState } from "react";
-import { FaRegCircleXmark, FaXmark } from "react-icons/fa6";
+import { FaFileInvoice, FaRegCircleXmark, FaXmark } from "react-icons/fa6";
 import { BiChevronUp, BiChevronDown, BiTrash } from "react-icons/bi";
 import SelectFieldWithOnChange from "./input/SelectFieldWithOnChange";
+import { ModalProvider, useModal } from "./modals/Modal";
+import { paymentMethods } from "@/utils/constants";
+import DropZone from "./input/DropZone";
 
 function SideBar() {
   const barRef = useRef<HTMLDivElement>(null);
   const showSideBar = useAppStore((state) => state.showSideBar);
-  // useClickOutside(barRef, () => {
-  //   useAppStore.setState({ showSideBar: { open: false, value: "" } });
-  // });
 
   return (
-    <AnimatePresence>
-      {showSideBar.open && (
-        <motion.div
-          ref={barRef}
-          initial={{ x: "100%" }}
-          whileInView={{ x: 0 }}
-          exit={{ x: "100%" }}
-          transition={{ duration: 1, type: "spring" }}
-          className="top-0 right-0 bottom-0 z-50 fixed bg-card backdrop-blur-2xl p-6 w-[26rem] overflow-y-auto"
-        >
-          <button
-            onClick={() => {
-              useAppStore.setState({
-                showSideBar: { open: false, value: "" },
-              });
-            }}
-            className="top-4 right-4 absolute flex justify-center items-center hover:bg-red-500/10 px-2 py-2 rounded-full w-10 max-w-10 h-10 hover:text-red-500 duration-300 cursor-pointer"
+    <ModalProvider>
+      <AnimatePresence>
+        {showSideBar.open && (
+          <motion.div
+            ref={barRef}
+            initial={{ x: "100%" }}
+            whileInView={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ duration: 1, type: "spring" }}
+            className="top-0 right-0 bottom-0 z-50 fixed bg-card backdrop-blur-2xl p-6 w-[26rem] overflow-y-auto"
           >
-            <FaXmark className="min-w-4 h-4" />
-          </button>
-          {showSideBar.value === "cart" && <Cart isCart />}
-          {showSideBar.value === "wish-list" && <Cart />}
-          {showSideBar.value === "notifications" && <Notifications />}
-        </motion.div>
-      )}
-    </AnimatePresence>
+            <button
+              onClick={() => {
+                useAppStore.setState({
+                  showSideBar: { open: false, value: "" },
+                });
+              }}
+              className="top-4 right-4 absolute flex justify-center items-center hover:bg-red-500/10 px-2 py-2 rounded-full w-10 max-w-10 h-10 hover:text-red-500 duration-300 cursor-pointer"
+            >
+              <FaXmark className="min-w-4 h-4" />
+            </button>
+            {showSideBar.value === "cart" && <Cart isCart />}
+            {showSideBar.value === "wish-list" && <Cart />}
+            {showSideBar.value === "notifications" && <Notifications />}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </ModalProvider>
   );
 }
 
@@ -148,7 +149,9 @@ type Props = {
 
 function Cart(props: Props) {
   const { secureAxios } = useAxios();
+  const { openModal } = useModal();
   const [isLoading, setIsLoading] = useState(false);
+  const [pop, setPop] = useState<File | null>(null);
   const cart = usePersistedStore((state) => state.cart);
   const wishList = usePersistedStore((state) => state.wishList);
   const [paymentMethodError, setPaymentMethodError] = useState("");
@@ -157,26 +160,35 @@ function Cart(props: Props) {
   const data = props.isCart ? cart : wishList;
 
   const placeOrder = async () => {
-    if (!selectedPaymentMethod) {
-      setPaymentMethodError("payment method cannot be empty");
-      return toast({
-        description: "payment method cannot be empty",
-        variant: "error",
-      });
-    }
     if (data.length === 0) return;
+    const formData = new FormData();
+
+    // if (pop) formData.append("pop", pop);
+    // formData.append("paymentMethod", selectedPaymentMethod);
+    // const items = data.map((item) => ({
+    //   product: item.id,
+    //   quantity: item.quantity,
+    // }));
+    // formData.append("items", JSON.stringify(items));
+
     const dataToSend = {
+      pop,
       paymentMethod: selectedPaymentMethod,
-      items: data.map((item) => ({
-        product: item.id,
-        quantity: item.quantity,
-      })),
+      items: JSON.stringify(
+        data.map((item) => ({
+          product: item.id,
+          quantity: item.quantity,
+        }))
+      ),
     };
     setIsLoading(true);
     await secureAxios
-      .post("/shop/order", dataToSend)
+      .post("/shop/order", dataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
       .then((res) => {
         let tempErrors: { id: string; message: string }[] = [];
+        console.log(res);
         if (props.isCart) {
           usePersistedStore.setState((state) => {
             let newcart: IProduct[] = [];
@@ -210,6 +222,10 @@ function Cart(props: Props) {
         }
 
         setErrors(tempErrors);
+        if (tempErrors.length === 0) {
+          setSelectedPaymentMethod("");
+          setPop(null);
+        }
         toast({
           description: res.data.message,
           variant: "success",
@@ -247,30 +263,17 @@ function Cart(props: Props) {
     });
   };
 
-  const paymentMethods = [
-    {
-      label: "Credit",
-      value: "credit",
-    },
-    {
-      label: "Cash On Delivery",
-      value: "cod",
-    },
-    {
-      label: "Proof of Payment",
-      value: "pop",
-    },
-  ];
+  console.log("##########", selectedPaymentMethod);
 
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="flex flex-col space-y-4 w-full">
       <div className="pb-4 border-strokedark border-b w-full">
         <h2 className="font-bold text-xl">
           Shopping {props.isCart ? "Cart" : "WishList"}
         </h2>
       </div>
-      {data.length > 0 && props.isCart && (
-        <div className="flex flex-col space-y-1">
+      {data.length > 0 && (
+        <div className="flex flex-col space-y-1 w-full">
           <SelectFieldWithOnChange
             name={"paymentMethod"}
             label={"Payment Method"}
@@ -282,13 +285,37 @@ function Cart(props: Props) {
               setPaymentMethodError("");
             }}
             classNames={{
-              base: cn("bg-card-2/50", paymentMethodError && "border-red-500"),
+              base: "border-red-500",
             }}
           />
           {paymentMethodError && (
-            <span className="text-red-500">{paymentMethodError}</span>
+            <span className="text-red-500">Payment Method is required</span>
           )}
         </div>
+      )}
+      {selectedPaymentMethod === "pop" && (
+        <>
+          <div className="flex flex-col space-y-2 bg-yellow-100 p-4 rounded-lg">
+            <span className="font-bold">Note:</span>
+            <span className="text-sm">
+              Please ensure that you upload a clear and legible proof of payment
+              when placing your order. This helps us verify your payment quickly
+              and process your order without delays.
+            </span>
+          </div>
+          <DropZone
+            file={pop}
+            label="Proof of Payment Image"
+            fileType={["image", "document"]}
+            setFile={setPop}
+            icon={FaFileInvoice}
+            className=""
+            classNames={{
+              container: "min-w-0",
+            }}
+            maxSize={3}
+          />
+        </>
       )}
       <div className="flex flex-col space-y-6 w-full divide">
         {data.map((item) => (

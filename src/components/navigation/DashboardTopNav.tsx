@@ -21,7 +21,7 @@ type Props = {
 function DashboardTopNav(props: Props) {
   const { secureAxios } = useAxios();
   const { openModal, closeModal } = useModal();
-  const { branchName, email, role } = useUserStore();
+  const { branchName, email, role, logo } = useUserStore();
   const { notications, isViewedNotifications } = useAppStore();
 
   useEffect(() => {
@@ -109,7 +109,14 @@ function DashboardTopNav(props: Props) {
             </Button>
           )}
           <div className="flex items-center space-x-2 p-1 pr-4 border border-gray-400 rounded-full">
-            <FaUser className="bg-strokedark/40 p-1 rounded-full w-8 h-8 text-primary" />
+            {logo ? (
+              <img
+                src={logo}
+                className="bg-strokedark/40 p-1 rounded-full w-8 h-8 text-primary"
+              />
+            ) : (
+              <FaUser className="bg-strokedark/40 p-1 rounded-full w-8 h-8 text-primary" />
+            )}
             <div className="flex flex-col">
               <span className="text-sm">{branchName}</span>
               <span className="text-xxs">{email}</span>
